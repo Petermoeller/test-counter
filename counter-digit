@@ -1,0 +1,71 @@
+/* Simple Counter
+* ——————
+*
+* This is a simple counter that takes a digital input
+*
+*/
+//1 digit setup
+const int latchPin=2; //pin 12 on 595 to pin 2 on Arduino
+const int dataPin=3; //pin 14 on 595 to pin 3 on Arduino
+const int clockPin=4; //pin 11 on 595 to pin 4 on Arduino
+
+int segment[10] = {63,6,91,79,102,109,125,7,127,111 }; // for common cathode (eller 103=9)
+
+//Button setup int
+int pushButton=5;     //attached button on pin 5
+int buttonValue=0;       //reading of button value
+
+int counter=0;        //Counter for pushes
+
+int currentState=0;
+int previousState=0;
+
+void setup() {
+pinMode(latchPin, OUTPUT);
+pinMode(dataPin, OUTPUT);
+pinMode(clockPin, OUTPUT);
+pinMode(pushButton,INPUT);
+Serial.begin(9600);
+
+digitalWrite(latchPin, LOW);  //avoid flashing of LEDS
+shiftOut(dataPin,clockPin, MSBFIRST,63); //clears display
+digitalWrite(latchPin,HIGH);
+}
+
+void loop(){
+
+buttonValue = digitalRead(pushButton); // read input value
+
+if (buttonValue == HIGH)  { // check if the input is HIGH (button released)
+  currentState=1;
+}
+else{
+  currentState=0;
+  }
+  
+if(currentState != previousState){
+  if(currentState==1){
+    counter++;
+    Serial.println(counter);
+    
+    if(counter>9){   //If counter reaches 10, reset to zero
+    counter=0;      //reset counter to zero
+    }
+    
+    digitalWrite(latchPin, LOW);
+    shiftOut(dataPin, clockPin, MSBFIRST,segment[counter]+128);  //plot to digital display based on counter array (+128 due to binary values)
+    digitalWrite(latchPin,HIGH);
+    }
+  }
+previousState=currentState;
+delay(100);  
+}
+
+
+/*
+  digitalWrite(latchPin, LOW);
+  shiftOut(dataPin, clockPin, MSBFIRST,segment[counter]);  //plot to digital display based on counter array (+128 due to binary values)
+  digitalWrite(latchPin,HIGH);
+  delay(30);
+  */
+
